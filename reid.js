@@ -1,13 +1,12 @@
 // Generate an ID that can be used both as a secure token and a random ID
-// Compact
+// Compact (24 characters + prefix)
 // Readable / Writable
 // Verifiable offline
-// Secure
+// Secure (2.8e+14 randomness per microsecond)
 // Clear intent
 
-const crypto = require("crypto");
-const CRC32 = require("crc-32");
-const process = require("process");
+const crypto = require("node:crypto");
+const crc16 = require("crc/calculators/crc16ccitt");
 
 const CROCKFORD_BASE_32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
@@ -37,45 +36,31 @@ function decodeCrockfordBase32(encoded) {
 }
 
 function reid(prefix = null) {
-  // 40 bits for timestamp
-  // 58 bits randomness
-  // 32 bits CRC32
-  // output: 26 characters + prefix
+  // 56 bits for timestamp (microseconds)
+  // 48 bits randomness
+  // 16 bits CRC-16
+  // output: 24 characters + prefix
 
-  const time = Date.now();
+  const time = BigInt(Math.floor((performance.timeOrigin + performance.now()) * 1000));
   const timeBuf = Buffer.alloc(8);
-  timeBuf.writeBigInt64BE(BigInt(time));
+  timeBuf.writeBigInt64BE(time);
 
-  const finalBuf = Buffer.alloc(17);
-  timeBuf.copy(finalBuf, 0, 3);
-  crypto.randomBytes(8).copy(finalBuf, 5);
-  
-  finalBuf[12] = (finalBuf[12] >>> 6) << 6;
-  const checksum = CRC32.buf(finalBuf.subarray(0, 13), 0);
+  const finalBuf = Buffer.alloc(15);
+  timeBuf.copy(finalBuf, 0, 1);
+  crypto.randomBytes(6).copy(finalBuf, 7);
 
-  finalBuf.writeInt32BE(checksum, 13);
-  
-  finalBuf[12] += (finalBuf[13] >>> 2);
-  finalBuf[13] = (finalBuf[13] << 6) + (finalBuf[14] >>> 2);
-  finalBuf[14] = (finalBuf[14] << 6) + (finalBuf[15] >>> 2);
-  finalBuf[15] = (finalBuf[15] << 6) + (finalBuf[16] >>> 2);
-  finalBuf[16] = finalBuf[16] << 6;
+  const crc = crc16(finalBuf.subarray(0, 13));
+  finalBuf.writeUInt16BE(crc, 13);
 
-  const b32 = encodeCrockfordBase32(finalBuf, 130);
-
+  const b32 = encodeCrockfordBase32(finalBuf);
   return prefix ? `${prefix}_${b32}` : b32;
 }
 
 function validateReid(reid) {
   const cleanReid = lintReid(reid).split("_").slice(-1)[0];
   const decodedReid = decodeCrockfordBase32(cleanReid);
-  decodedReid[16] = (decodedReid[15] << 2) + (decodedReid[16] >>> 6);
-  decodedReid[15] = (decodedReid[14] << 2) + (decodedReid[15] >>> 6);
-  decodedReid[14] = (decodedReid[13] << 2) + (decodedReid[14] >>> 6);
-  decodedReid[13] = (decodedReid[12] << 2) + (decodedReid[13] >>> 6);
-  decodedReid[12] = (decodedReid[12] >>> 6) << 6;
-  const decodedChecksum = decodedReid.readInt32BE(13);
-  const calculatedChecksum = CRC32.buf(decodedReid.subarray(0, 13), 0);
+  const decodedChecksum = decodedReid.readUInt16BE(13);
+  const calculatedChecksum = crc16(decodedReid.subarray(0, 13));
 
   if (decodedChecksum !== calculatedChecksum) {
     throw new Error("Invalid ID");
@@ -98,7 +83,6 @@ function lintReid(token) {
   return linted;
 }
 
-// const token = reid("pk");
-// console.log(token);
-// validateReid(token);
-console.log((performance.timeOrigin + performance.now())*1000);
+const token = reid("pk");
+console.log(token);
+validateReid(token);
