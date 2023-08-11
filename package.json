@@ -1,0 +1,14 @@
+{
+  "name": "reid",
+  "version": "1.0.0",
+  "description": "",
+  "main": "reid.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "crc-32": "^1.2.2"
+  }
+}
