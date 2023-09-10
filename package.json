@@ -1,14 +1,39 @@
 {
   "name": "reid",
   "version": "1.0.0",
-  "description": "",
-  "main": "reid.js",
+  "description": "Really useful IDs",
+  "main": "./lib/cjs/reid.js",
+  "module": "./lib/esm/reid.js",
+  "exports": {
+    ".": {
+      "require": "./lib/cjs/reid.js",
+      "default": "./lib/esm/reid.js"
+    }
+  },
+  "files": [
+    "lib/"
+  ],
   "scripts": {
+    "build": "npm run lint && rm -rf lib && tsc && tsc -p tsconfig.cjs.json",
+    "lint": "eslint --fix .",
+    "prepublishOnly": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "engines": {
+    "node": ">=14.17.0"
+  },
+  "author": "Niccolo Zapponi <nzapponi@gmail.com>",
+  "license": "MIT",
   "dependencies": {
     "crc": "^4.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.9",
+    "@typescript-eslint/eslint-plugin": "^6.3.0",
+    "@typescript-eslint/parser": "^6.3.0",
+    "eslint": "^8.46.0",
+    "eslint-config-prettier": "^9.0.0",
+    "prettier": "^3.0.1",
+    "typescript": "^5.1.6"
   }
 }

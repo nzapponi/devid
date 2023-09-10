@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "module": "es6",
+    "target": "es2021",
+    "moduleResolution": "node",
+    "outDir": "./lib/esm",
+    "noImplicitAny": true,
+    "resolveJsonModule": true,
+    "declaration": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"],
+  "lib": ["es2021"]
+}
