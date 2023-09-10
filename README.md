@@ -1,51 +1,51 @@
-# ReID
+# DevID
 
-*The* most useful, developer friendly ID or token generation tool.
+*The* most useful, developer friendly ID or token generator.
 
 ## Key Features
 
 - [x] Random enough to be used both as a random ID or a secure token
 - [x] Compact, just 24 characters (plus optional prefix, if you wish)
 - [x] Supports prefixes, providing clear context to developers and users alike
-- [x] Tamper-proof, with checksum embedded in the ReID that can be checked offline, without hitting a database
-- [x] Secure, with 2.8e+14 unique ReIDs per microsecond
+- [x] Tamper-proof, with checksum embedded in the DevID that can be checked offline, without hitting a database
+- [x] Secure, with 2.8e+14 unique DevIDs per microsecond
 - [x] Human readable, by avoiding ambiguous characters
 - [x] Auto-lints inputs
 
 ## Installation
 ```
-npm install reid
+npm install devid
 ```
 ## Usage
 ```typescript
-import reid from "reid";
+import devid from "devid";
 
-// Get a new ReID, without prefix
-const id = reid(); // type: ReID
+// Get a new DevID, without prefix
+const id = devid(); // type: DevID
 console.log(id.toString());
 // Output: 0R2FWCHN822NKS5XGED6P5BC
 
-// Get a new ReID, with prefix
-console.log(reid("user").toString());
+// Get a new DevID, with prefix
+console.log(devid("user").toString());
 // Output: user_0R2FWCHN822NKS5XGED6P5BC
 
-// Initialize a valid ReID
-const validId = reid("user_0R2FWCHN822NKS5XGED6P5BC");
+// Initialize a valid DevID
+const validId = devid("user_0R2FWCHN822NKS5XGED6P5BC");
 console.log(validId.toString());
 // Output: user_0R2FWCHN822NKS5XGED6P5BC
 
-// Initialize a valid, dirty ReID
-const validDirtyId = reid("user_or2fwndvlrk897784eotpz3k");
+// Initialize a valid, dirty DevID
+const validDirtyId = devid("user_or2fwndvlrk897784eotpz3k");
 console.log(validDirtyId.toString());
 // Output: user_0R2FWNDV1RK897784E0TPZ3K
 // Note that linting replaced o's with 0's and l with 1
 
-// Initialize a ReID with bad checksum
-const tamperedId = reid("user_0R2FWCHN822NKS5XGED6P5BD");
+// Initialize a DevID with bad checksum
+const tamperedId = devid("user_0R2FWCHN822NKS5XGED6P5BD");
 // throws a ChecksumError
 
-// Initialize a ReID with bad format
-const invalidId = reid("user_0R2FWCHN822NKS5XGED6P5BCBCJE");
+// Initialize a DevID with bad format
+const invalidId = devid("user_0R2FWCHN822NKS5XGED6P5BCBCJE");
 // throws a FormatError
 ```
 ## Technical Details
@@ -56,20 +56,20 @@ The default delimiter is the underscore `_`, however you can change it to any of
 
 To do so, use `setDelimiter`:
 ```typescript
-import { reid, setDelimiter } from "reid";
+import { devid, setDelimiter } from "devid";
 
 setDelimiter("-");
 
-console.log(reid("user").toString());
+console.log(devid("user").toString());
 // Output: user-0R2FWCHN822NKS5XGED6P5BD
 ```
 
-Make sure you set it also when importing the module just to parse ReIDs.
+Make sure you set it also when importing the module just to parse DevIDs.
 
-### ReID Format and Implementation
-ReIDs are 15 bytes long.
+### DevID Format and Implementation
+DevIDs are 15 bytes long.
 
-The implementation of ReIDs includes:
+The implementation of DevIDs includes:
 - 7 bytes to store the generation timestamp, in microseconds
 - 6 random bytes to introduce randomness within each microsecond
 - 2 bytes for checksum, using CRC-16 (CCITT)
@@ -78,12 +78,12 @@ While a timestamp in microseconds would require 8 bytes to be stored, the first 
 
 The resulting 15 byte buffer is encoded to 24 characters using Crockford's Base 32 encoding, which allows to avoid ambiguous and special characters. The character space of Crockford's Base 32 is `0123456789ABCDEFGHJKMNPQRSTVWXYZ`.
 
-Based on the convention above, the first 11 characters of a ReID represent the timestamp and can be used to easily sort ReIDs.
-Note: Base 32 means that every character encodes 5 bits, so in reality the least significant bit of the timestamp is encoded in the 12th character of the ReID. However, given that the 12th character also encodes randomness, it cannot be used for sorting.
+Based on the convention above, the first 11 characters of a DevID represent the timestamp and can be used to easily sort DevIDs.
+Note: Base 32 means that every character encodes 5 bits, so in reality the least significant bit of the timestamp is encoded in the 12th character of the DevID. However, given that the 12th character also encodes randomness, it cannot be used for sorting.
 
-Sorting for the entire ReID cannot be guaranteed, however, due to the random bits used after the timestamp.
+Sorting for the entire DevID cannot be guaranteed, however, due to the random bits used after the timestamp.
 
-Here is an example of the process of generating a ReID:
+Here is an example of the process of generating a DevID:
 1. Generation time: `2023-09-10T10:19:36.295761Z`
 2. Convert to timestamp in microseconds: `1694341176295761`
 3. Represent as a BigInt (Big Endian): `0x604FE8BF10151`, or `00 06 04 fe 8b f1 10 f1`

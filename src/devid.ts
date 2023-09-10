@@ -39,16 +39,16 @@ export function setDelimiter(newDelimiter: "_" | "-" | "/" | "\\" | ".") {
   delimiter = newDelimiter;
 }
 
-export class ReID {
+export class DevID {
   private prefix?: string;
   private token: string;
 
-  constructor(reidOrPrefix?: string) {
+  constructor(devidOrPrefix?: string) {
     if (
-      reidOrPrefix &&
-      (reidOrPrefix.includes(delimiter) || reidOrPrefix.length > 23)
+      devidOrPrefix &&
+      (devidOrPrefix.includes(delimiter) || devidOrPrefix.length > 23)
     ) {
-      const tokenParts = reidOrPrefix.split(delimiter);
+      const tokenParts = devidOrPrefix.split(delimiter);
       const id = tokenParts.slice(-1)[0];
       if (id.length > 24) {
         throw new FormatError();
@@ -61,9 +61,9 @@ export class ReID {
         throw new FormatError();
       }
   
-      const decodedReid = decodeCrockfordBase32(linted);
-      const decodedChecksum = decodedReid.readUInt16BE(13);
-      const calculatedChecksum = crc16(decodedReid.subarray(0, 13));
+      const decodedDevid = decodeCrockfordBase32(linted);
+      const decodedChecksum = decodedDevid.readUInt16BE(13);
+      const calculatedChecksum = crc16(decodedDevid.subarray(0, 13));
   
       if (decodedChecksum !== calculatedChecksum) {
         throw new ChecksumError();
@@ -89,8 +89,8 @@ export class ReID {
   
       const b32 = encodeCrockfordBase32(finalBuf);
 
-      if (reidOrPrefix) {
-        this.prefix = reidOrPrefix;
+      if (devidOrPrefix) {
+        this.prefix = devidOrPrefix;
       }
 
       this.token = b32;
@@ -102,8 +102,8 @@ export class ReID {
   }
 }
 
-export function reid(reidOrPrefix?: string) {
-  return new ReID(reidOrPrefix);
+export function devid(devidOrPrefix?: string) {
+  return new DevID(devidOrPrefix);
 }
 
-export default reid;
+export default devid;

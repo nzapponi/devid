@@ -1,13 +1,13 @@
 {
-  "name": "reid",
+  "name": "devid",
   "version": "1.0.0",
-  "description": "Really useful IDs",
-  "main": "./lib/cjs/reid.js",
-  "module": "./lib/esm/reid.js",
+  "description": "The most useful, developer friendly ID or token generator",
+  "main": "./lib/cjs/devid.js",
+  "module": "./lib/esm/devid.js",
   "exports": {
     ".": {
-      "require": "./lib/cjs/reid.js",
-      "default": "./lib/esm/reid.js"
+      "require": "./lib/cjs/devid.js",
+      "default": "./lib/esm/devid.js"
     }
   },
   "files": [
@@ -44,5 +44,11 @@
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     }
-  }
+  },
+  "keywords": [
+    "id",
+    "uuid",
+    "devid",
+    "token"
+  ]
 }
