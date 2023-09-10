@@ -18,24 +18,25 @@ npm install reid
 ```
 ## Usage
 ```typescript
-import { reid } from "reid";
+import reid from "reid";
 
 // Get a new ReID, without prefix
-console.log(reid());
+const id = reid(); // type: ReID
+console.log(id.toString());
 // Output: 0R2FWCHN822NKS5XGED6P5BC
 
 // Get a new ReID, with prefix
-console.log(reid("user"));
+console.log(reid("user").toString());
 // Output: user_0R2FWCHN822NKS5XGED6P5BC
 
 // Initialize a valid ReID
 const validId = reid("user_0R2FWCHN822NKS5XGED6P5BC");
-console.log(validId);
+console.log(validId.toString());
 // Output: user_0R2FWCHN822NKS5XGED6P5BC
 
 // Initialize a valid, dirty ReID
 const validDirtyId = reid("user_or2fwndvlrk897784eotpz3k");
-console.log(validDirtyId);
+console.log(validDirtyId.toString());
 // Output: user_0R2FWNDV1RK897784E0TPZ3K
 // Note that linting replaced o's with 0's and l with 1
 
@@ -59,7 +60,7 @@ import { reid, setDelimiter } from "reid";
 
 setDelimiter("-");
 
-console.log(reid("user"));
+console.log(reid("user").toString());
 // Output: user-0R2FWCHN822NKS5XGED6P5BD
 ```
 
@@ -70,7 +71,7 @@ ReIDs are 15 bytes long.
 
 The implementation of ReIDs includes:
 - 7 bytes to store the generation timestamp, in microseconds
-- 6 random bytes to introduce randomness within the microseconds
+- 6 random bytes to introduce randomness within each microsecond
 - 2 bytes for checksum, using CRC-16 (CCITT)
 
 While a timestamp in microseconds would require 8 bytes to be stored, the first byte is dropped. This means that timestamps will reset to zero and duplication might occur approximately every 2,284 years.

@@ -6,9 +6,6 @@ const CROCKFORD_BASE_32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const LINT_REGEX = new RegExp(`[^${CROCKFORD_BASE_32}]`, "g");
 let delimiter = "_";
 
-// TODO: Fix type alias
-type ReID = string;
-
 function encodeCrockfordBase32(buf: Buffer, maxLength?: number) {
   const b32 = [];
   const textBuf = BigInt("0x" + buf.toString("hex"))
@@ -42,50 +39,71 @@ export function setDelimiter(newDelimiter: "_" | "-" | "/" | "\\" | ".") {
   delimiter = newDelimiter;
 }
 
-export function reid(reidOrPrefix?: string | ReID): ReID {
-  if (
-    reidOrPrefix &&
-    (reidOrPrefix.includes(delimiter) || reidOrPrefix.length > 23)
-  ) {
-    const tokenParts = reidOrPrefix.split(delimiter);
-    const id = tokenParts.slice(-1)[0];
-    const linted = id
-      .toUpperCase()
-      .replaceAll(/[oO]/g, "0")
-      .replaceAll(/[iIlL]/g, "1");
-    if (linted.match(LINT_REGEX)) {
-      throw new FormatError();
+export class ReID {
+  private prefix?: string;
+  private token: string;
+
+  constructor(reidOrPrefix?: string) {
+    if (
+      reidOrPrefix &&
+      (reidOrPrefix.includes(delimiter) || reidOrPrefix.length > 23)
+    ) {
+      const tokenParts = reidOrPrefix.split(delimiter);
+      const id = tokenParts.slice(-1)[0];
+      if (id.length > 24) {
+        throw new FormatError();
+      }
+      const linted = id
+        .toUpperCase()
+        .replaceAll(/[oO]/g, "0")
+        .replaceAll(/[iIlL]/g, "1");
+      if (linted.match(LINT_REGEX)) {
+        throw new FormatError();
+      }
+  
+      const decodedReid = decodeCrockfordBase32(linted);
+      const decodedChecksum = decodedReid.readUInt16BE(13);
+      const calculatedChecksum = crc16(decodedReid.subarray(0, 13));
+  
+      if (decodedChecksum !== calculatedChecksum) {
+        throw new ChecksumError();
+      }
+
+      if (tokenParts.length === 2) {
+        this.prefix = tokenParts[0];
+      }
+      this.token = linted;
+    } else {
+      const time = BigInt(
+        Math.floor((performance.timeOrigin + performance.now()) * 1000),
+      );
+      const timeBuf = Buffer.alloc(8);
+      timeBuf.writeBigInt64BE(time);
+  
+      const finalBuf = Buffer.alloc(15);
+      timeBuf.copy(finalBuf, 0, 1);
+      randomBytes(6).copy(finalBuf, 7);
+  
+      const crc = crc16(finalBuf.subarray(0, 13));
+      finalBuf.writeUInt16BE(crc, 13);
+  
+      const b32 = encodeCrockfordBase32(finalBuf);
+
+      if (reidOrPrefix) {
+        this.prefix = reidOrPrefix;
+      }
+
+      this.token = b32;
     }
-
-    const decodedReid = decodeCrockfordBase32(linted);
-    const decodedChecksum = decodedReid.readUInt16BE(13);
-    const calculatedChecksum = crc16(decodedReid.subarray(0, 13));
-
-    if (decodedChecksum !== calculatedChecksum) {
-      throw new ChecksumError();
-    }
-
-    const r = tokenParts.length === 2 ? tokenParts[0] + delimiter + linted : linted;
-
-    return r;
-  } else {
-    const time = BigInt(
-      Math.floor((performance.timeOrigin + performance.now()) * 1000),
-    );
-    const timeBuf = Buffer.alloc(8);
-    timeBuf.writeBigInt64BE(time);
-
-    const finalBuf = Buffer.alloc(15);
-    timeBuf.copy(finalBuf, 0, 1);
-    randomBytes(6).copy(finalBuf, 7);
-
-    const crc = crc16(finalBuf.subarray(0, 13));
-    finalBuf.writeUInt16BE(crc, 13);
-
-    const b32 = encodeCrockfordBase32(finalBuf);
-
-    return reidOrPrefix ? reidOrPrefix + delimiter + b32 : b32;
   }
+
+  toString() {
+    return this.prefix ? this.prefix + delimiter + this.token : this.token;
+  }
+}
+
+export function reid(reidOrPrefix?: string) {
+  return new ReID(reidOrPrefix);
 }
 
 export default reid;
