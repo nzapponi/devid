@@ -86,8 +86,8 @@ Sorting for the entire DevID cannot be guaranteed, however, due to the random bi
 Here is an example of the process of generating a DevID:
 1. Generation time: `2023-09-10T10:19:36.295761Z`
 2. Convert to timestamp in microseconds: `1694341176295761`
-3. Represent as a BigInt (Big Endian): `0x604FE8BF10151`, or `00 06 04 fe 8b f1 10 f1`
-4. Drop the first byte: `06 04 fe 8b f1 10 f1`
+3. Represent as a BigInt (Big Endian): `0x604FE8BF10151`, or `00 06 04 fe 8b f1 01 51`
+4. Drop the first byte: `06 04 fe 8b f1 01 51`
 5. Generate 6 random bytes: `0x2ce2cc6e3fe3`
 6. Calculate the CRC-16 checksum of the 13 bytes obtained so far: `0x6438`
 
@@ -96,7 +96,7 @@ Here is an example of the process of generating a DevID:
 #            Timestamp             #         Random Bytes        #  CRC-16 #
 ############################################################################
 #                                   Bytes                                  #
-# 06 | 04 | fe | 8b | f1 | 10 | f1 | 2c | e2 | cc | 6e | 3f | e3 | 64 | 38 #
+# 06 | 04 | fe | 8b | f1 | 01 | 51 | 2c | e2 | cc | 6e | 3f | e3 | 64 | 38 #
 ############################################################################
 #                           Crockford's Base 32                            #
 #  0  R  2  F  X  2  Z  H  2  3  R  J  S  R  P  C  D  R  Z  Y  6  S  1  R  #
