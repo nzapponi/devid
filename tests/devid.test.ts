@@ -1,4 +1,4 @@
-import { ChecksumError, FormatError } from "../src/errors";
+import { DevIDError } from "../src/errors";
 import devid, { DevID, setDelimiter } from "../src/devid";
 
 describe("devid creation", () => {
@@ -27,7 +27,7 @@ describe("devid creation", () => {
   it("should fail to create a devid if the prefix is too long", () => {
     expect(() => {
       devid("1234567890123456789012345");
-    }).toThrow(FormatError);
+    }).toThrow(DevIDError);
   });
 });
 
@@ -60,7 +60,7 @@ describe("devid parsing", () => {
   it("should fail to initialize a devid if there are invalid characters", () => {
     expect(() => {
       devid("12345678901234567890123.");
-    }).toThrow(FormatError);
+    }).toThrow(DevIDError);
   });
 
   it("should fail to initialize a devid if it was tampered with", () => {
@@ -68,6 +68,6 @@ describe("devid parsing", () => {
     id[0] = id[0] === "1" ? "2" : "1";
     expect(() => {
       devid(id.join(""));
-    }).toThrow(ChecksumError);
+    }).toThrow(DevIDError);
   });
 });
