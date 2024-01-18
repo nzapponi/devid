@@ -1,2 +1,5 @@
-export class FormatError extends Error {}
-export class ChecksumError extends Error {}
+export class DevIDError extends Error {
+  constructor(readonly type: "FormatError" | "ChecksumError") {
+    super();
+  }
+}

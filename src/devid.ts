@@ -1,6 +1,8 @@
 import { randomBytes } from "node:crypto";
 import crc16 from "crc/calculators/crc16ccitt";
-import { ChecksumError, FormatError } from "./errors";
+import { DevIDError } from "./errors";
+
+export { DevIDError } from "./errors";
 
 const CROCKFORD_BASE_32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const LINT_REGEX = new RegExp(`[^${CROCKFORD_BASE_32}]`, "g");
@@ -51,14 +53,14 @@ export class DevID {
       const tokenParts = devidOrPrefix.split(delimiter);
       const id = tokenParts.slice(-1)[0];
       if (id.length > 24) {
-        throw new FormatError();
+        throw new DevIDError("FormatError");
       }
       const linted = id
         .toUpperCase()
         .replaceAll(/[oO]/g, "0")
         .replaceAll(/[iIlL]/g, "1");
       if (linted.match(LINT_REGEX)) {
-        throw new FormatError();
+        throw new DevIDError("FormatError");
       }
   
       const decodedDevid = decodeCrockfordBase32(linted);
@@ -66,7 +68,7 @@ export class DevID {
       const calculatedChecksum = crc16(decodedDevid.subarray(0, 13));
   
       if (decodedChecksum !== calculatedChecksum) {
-        throw new ChecksumError();
+        throw new DevIDError("ChecksumError");
       }
 
       if (tokenParts.length === 2) {
