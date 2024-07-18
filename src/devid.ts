@@ -102,6 +102,10 @@ export class DevID {
   toString() {
     return this.prefix ? this.prefix + delimiter + this.token : this.token;
   }
+
+  toJSON() {
+    return this.toString();
+  }
 }
 
 export function devid(devidOrPrefix?: string) {
